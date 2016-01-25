@@ -23,8 +23,18 @@ int main(){
   const double xmin = -20;
   const double xmax = 20;
   const double dx = (xmax-xmin)/(N-1) ;
+  
+  double dtScal = 0.7;
+  
+  cout << "Eingabe zur dt-Skalierung (Angabe > 0):" << endl;
+  cin >> dtScal;
+  
+  if(dtScal <= 0){
+    cout << "Fehler in der Skalierung." << endl;
+    return -1;
+  }
 
-  double dt = dx;
+  double dt = dtScal*0.5*dx*dx/D; // abgeaendert auf Stabilitaetsbereich
   double t = 0;
   const int Na = 10;
   const int Nk = int(tEnd/Na/dt);
@@ -44,8 +54,10 @@ int main(){
   for(int i=1; i<=Na; i++)
   {
    for(int j=0; j<Nk; j++){
-
-
+     step(u1,u0,dt,dx,D,N); // naechster Schritt
+     h=u0;
+     u0=u1; // Tauschen u0 <-> u1
+     u1=h;
    }
    strm.str("");
    strm << "u_" << i;
@@ -59,17 +71,19 @@ int main(){
   return 0;
 }
 //-----------------------------------------------
-void step(double* const f1, double* const f0,
-          const double dt, const double dx,
-          const double D, const int N)
-{
-
+void step(double* const f1, double* const f0, const double dt, const double dx,
+          const double D, const int N){
+  f1[0] = f0[0] + dt * D/(dx*dx) * (f0[1]-2*f0[0]); // Randwert [0]
+  for(int i = 1; i < (N-1); i++){
+    f1[i] = f0[i] + dt * D/(dx*dx) * (f0[i+1]-2*f0[i]+f0[i-1]); // Gleichung aus FTCS umgestellt
+  }
+  f1[N-1] = f0[N-1] + dt * D/(dx*dx) * (-2*f0[0]+f0[N-2]); // Randwert [N-1]
 }
 //-----------------------------------------------
 void initialize(double* const u0, const double dx,
                 const double dt, const double xmin,  const int N)
 {
-   double u,ux, uxx;
+   // double u,ux, uxx;
    for(int i=0; i<N; i++)
    {
      double x = xmin + i*dx;
