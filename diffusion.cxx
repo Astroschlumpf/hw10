@@ -59,6 +59,7 @@ int main(){
      u0=u1; // Tauschen u0 <-> u1
      u1=h;
    }
+   t = (i+1) * dt;
    strm.str("");
    strm << "u_" << i;
    writeToFile(u0, strm.str(), dx, xmin, N,t);
