@@ -24,7 +24,7 @@ int main(){
   const double xmax = 20;
   const double dx = (xmax-xmin)/(N-1) ;
   
-  double dtScal = 0.7;
+  double dtScal = 0.7; // Standardwert
   
   cout << "Eingabe zur dt-Skalierung (Angabe > 0):" << endl;
   cin >> dtScal;
@@ -33,11 +33,13 @@ int main(){
     cout << "Fehler in der Skalierung." << endl;
     return -1;
   }
+   //t += dt;
 
   double dt = dtScal*0.5*dx*dx/D; // abgeaendert auf Stabilitaetsbereich
   double t = 0;
   const int Na = 10;
   const int Nk = int(tEnd/Na/dt);
+  //cout << "dt = " << dt << endl; // debug
 
 
   double* u0 = new double[N];
@@ -55,16 +57,19 @@ int main(){
   {
    for(int j=0; j<Nk; j++){
      step(u1,u0,dt,dx,D,N); // naechster Schritt
-     h=u0;
-     u0=u1; // Tauschen u0 <-> u1
-     u1=h;
+     h = u0;
+     u0 = u1; // Tauschen u0 <-> u1
+     u1 = h;
+     t += dt; // neuer Zeitpunkt
    }
-   t = (i+1) * dt;
+   
+   t += dt * 0.5 * dtScal; // Korrektur zum Schleifenende
+   
    strm.str("");
    strm << "u_" << i;
    writeToFile(u0, strm.str(), dx, xmin, N,t);
   }
-
+  
   cout << "t = " << t << endl;
 
   delete[] u0;
